@@ -4,7 +4,10 @@ import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_fire_plugins/utils/authentication.dart';
 import 'package:flutter_fire_plugins/utils/database.dart';
+
+import 'login.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key, required User user})
@@ -204,6 +207,23 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                   },
                   child: Text(
                     'Jump',
+                    style: TextStyle(fontSize: 34),
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: 10,
+                right: 20,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(primary: Colors.red),
+                  onPressed: () async {
+                    await Authentication.signOut(context: context);
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (context) => SignInScreen()),
+                    );
+                  },
+                  child: Text(
+                    'logout',
                     style: TextStyle(fontSize: 34),
                   ),
                 ),

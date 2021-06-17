@@ -1,5 +1,7 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 
 import '../widgets/google_sign_in_button.dart';
@@ -13,6 +15,8 @@ class SignInScreen extends StatefulWidget {
 class _SignInScreenState extends State<SignInScreen> {
   bool _initialized = false;
   bool _error = false;
+  //Analytics
+  static FirebaseAnalytics analytics = FirebaseAnalytics();
 
   // Define an async function to initialize FlutterFire
   void initializeFlutterFire() async {
@@ -39,11 +43,42 @@ class _SignInScreenState extends State<SignInScreen> {
         _error = true;
       });
     }
+
+    //Crashlytics
+    await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
+    // Pass all uncaught errors to Crashlytics.
+    Function originalOnError = FlutterError.onError as Function;
+    FlutterError.onError = (FlutterErrorDetails errorDetails) async {
+      await FirebaseCrashlytics.instance.recordFlutterError(errorDetails);
+      // Forward to original handler.
+      originalOnError(errorDetails);
+    };
+
+    //await _testAsyncErrorOnInit();
+  }
+
+  Future<void> _testAsyncErrorOnInit() async {
+    //Normal crash
+    Future<void>.delayed(const Duration(seconds: 2), () {
+      final List<int> list = <int>[];
+      print(list[100]);
+    });
+
+    //Force crash
+    FirebaseCrashlytics.instance.crash();
+  }
+
+  Future<void> _testSetCurrentScreen() async {
+    await analytics.setCurrentScreen(
+      screenName: 'Analytics Demo',
+      screenClassOverride: 'AnalyticsDemo',
+    );
   }
 
   @override
   void initState() {
     initializeFlutterFire();
+    _testSetCurrentScreen();
     super.initState();
   }
 
